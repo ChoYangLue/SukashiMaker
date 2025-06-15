@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>sukashimaker</title>
+    <meta name="description" content="サイトの概要を記載">
+    <!--<link rel="stylesheet" href="style.css">-->
+</head>
+
+<body>
+    <input type="file" id="inputImage" accept="image/*" />
+    <canvas id="myCanvas"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const target = document.getElementById('inputImage');
+
+        class ExifClass {
+            constructor() {
+                this.Artist = "";
+                this.Make = "";
+                this.Model = "";
+                this.ISOSpeedRatings = "";
+                this.FNumber = "";
+                this.ExposureTime = "";
+                this.FocalLengthIn35mmFilm = "";
+                this.DateTimeOriginal = "";
+            }
+            getMakeText() {
+                return this.Make;
+            }
+            getModelText() {
+                return this.Model;
+            }
+            getMakeLogo() {
+                return "";
+            }
+            getFocalLenText() {
+                return this.FocalLengthIn35mmFilm + "mm";
+            }
+            getFnumberText() {
+                return "f/" + this.FNumber;
+            }
+            getShutterSpeedText() {
+                return this.ExposureTime + "s";
+            }
+            getTimeText() {
+                return this.DateTimeOriginal;
+            }
+        }
+        const myObject = new ExifClass();
+
+        target.addEventListener('change', (e) => {
+            // 選択された画像ファイルの処理
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = function () {
+                const image = new Image();
+                image.src = reader.result;
+                image.onload = function () {
+                    // 読み込んだ画像ファイルの処理
+                    EXIF.getData(image, function () {
+                        myObject.Artist = EXIF.getTag(this, 'Artist');
+                        myObject.Make = EXIF.getTag(this, 'Make');
+                        myObject.Model = EXIF.getTag(this, 'Model');
+                        myObject.ISOSpeedRatings = EXIF.getTag(this, 'ISOSpeedRatings');
+                        myObject.FNumber = EXIF.getTag(this, 'FNumber');
+                        myObject.ExposureTime = EXIF.getTag(this, 'ExposureTime');
+                        myObject.FocalLengthIn35mmFilm = EXIF.getTag(this, 'FocalLengthIn35mmFilm');
+                        myObject.DateTimeOriginal = EXIF.getTag(this, 'DateTimeOriginal');
+
+                        // すべての情報
+                        console.log(EXIF.getAllTags(this));
+                    });
+
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    ctx.drawImage(image, 0, 0);
+
+                    // テキストの描画
+                    const font = "24px sans-serif";
+                    const color = "white";
+                    const text = myObject.getMakeText() + " " + myObject.getModelText() + " " + myObject.getFocalLenText() + " " + myObject.getFnumberText() + " " + myObject.getShutterSpeedText();
+                    ctx.font = font;
+                    ctx.fillStyle = color;
+                    ctx.fillText(text, 10, image.height - 100);
+                };
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+
+</html>
