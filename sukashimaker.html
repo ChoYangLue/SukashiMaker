@@ -172,20 +172,25 @@
                 this.height = image.height / 6;
                 this.topWidth = 0;
                 this.topHeight = image.height;
-                this.fontSize = this.height / 3;
+                this.fontSize = Math.trunc(this.height / 4);
             }
             getCanvasHeight(image) {
                 return image.height + this.height;
             }
-            drawSukashiText(canvas, exifObj) {
-                canvas.fillStyle = this.bgColor;
-                canvas.fillRect(0, this.topHeight, this.width, this.height);
+            drawSukashiText(ctx, exifObj) {
+                ctx.fillStyle = this.bgColor;
+                ctx.fillRect(0, this.topHeight, this.width, this.height);
 
                 // テキストの描画
-                const text = exifObj.getMakeText() + " " + exifObj.getModelText() + " " + exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
-                applyGoogleFontToCanvas(canvas, text, 50, this.topHeight + 50, this.font, this.fontColor, this.fontSize);
-            }
+                //const text = exifObj.getMakeText() + " " + exifObj.getModelText() + " " + exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
+                const rightText = exifObj.getMakeText() + " " + exifObj.getModelText();
+                ctx.textAlign = "left";
+                applyGoogleFontToCanvas(ctx, rightText, this.fontSize * 6, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize);
 
+                const leftText = exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
+                ctx.textAlign = "right";
+                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 2, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize);
+            }
         }
         const shkashiAria = new SukashiCanvas();
 
