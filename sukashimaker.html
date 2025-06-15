@@ -19,11 +19,12 @@
 </head>
 
 <body>
-    <input type="file" id="inputImage" accept="image/*" />
+    <input type="file" id="inputImage" accept="image/*" /><br>
     <canvas id="myCanvas"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
     <script>
         const canvas = document.getElementById('myCanvas');
+        canvas.style.border = "2px solid";
         const ctx = canvas.getContext('2d');
         const target = document.getElementById('inputImage');
 
@@ -129,6 +130,65 @@
         }
         const myObject = new ExifClass();
 
+        class SukashiCanvas {
+            constructor() {
+                this.bgColor = "white";
+                this.font = "Matangi";
+                this.fontColor = "black";
+                this.fontSize = 24;
+                this.topWidth = 0;
+                this.topHeight = 0;
+                this.width = 0;
+                this.height = 0;
+            }
+            resizeImageToWindow(image) {
+                // ウィンドウの幅と高さを取得
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+
+                // 画像のアスペクト比を計算
+                const aspectRatio = image.naturalWidth / image.naturalHeight;
+
+                // ウィンドウサイズに合わせて画像の新しい幅と高さを計算
+                let newWidth, newHeight;
+                if (windowWidth / windowHeight > aspectRatio) {
+                    // ウィンドウが画像より縦長の場合
+                    newHeight = windowHeight;
+                    newWidth = newHeight * aspectRatio;
+                } else {
+                    // ウィンドウが画像より横長の場合
+                    newWidth = windowWidth;
+                    newHeight = newWidth / aspectRatio;
+                }
+
+                // 画像のスタイルを更新
+                image.width = newWidth;
+                image.height = newHeight;
+
+                this.resizeSukashiWindow(image);
+            }
+            resizeSukashiWindow(image) {
+                this.width = image.width;
+                this.height = image.height / 6;
+                this.topWidth = 0;
+                this.topHeight = image.height;
+                this.fontSize = this.height / 3;
+            }
+            getCanvasHeight(image) {
+                return image.height + this.height;
+            }
+            drawSukashiText(canvas, exifObj) {
+                canvas.fillStyle = this.bgColor;
+                canvas.fillRect(0, this.topHeight, this.width, this.height);
+
+                // テキストの描画
+                const text = exifObj.getMakeText() + " " + exifObj.getModelText() + " " + exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
+                applyGoogleFontToCanvas(canvas, text, 50, this.topHeight + 50, this.font, this.fontColor, this.fontSize);
+            }
+
+        }
+        const shkashiAria = new SukashiCanvas();
+
         target.addEventListener('change', (e) => {
             // 選択された画像ファイルの処理
             const file = e.target.files[0];
@@ -152,14 +212,13 @@
                         console.log(EXIF.getAllTags(this));
                     });
 
+                    shkashiAria.resizeImageToWindow(image);
                     canvas.width = image.width;
-                    canvas.height = image.height;
-                    ctx.drawImage(image, 0, 0);
+                    canvas.height = shkashiAria.getCanvasHeight(image);
+                    ctx.drawImage(image, 0, 0, image.width, image.height);
 
                     // テキストの描画
-                    const text = myObject.getMakeText() + " " + myObject.getModelText() + " " + myObject.getFocalLenText() + " " + myObject.getFnumberText() + " " + myObject.getShutterSpeedText() + " " + myObject.getIsoText();
-                    applyGoogleFontToCanvas(ctx, text, 50, image.height - 50, "Matangi", "white");
-
+                    shkashiAria.drawSukashiText(ctx, myObject);
                 };
             };
             reader.readAsDataURL(file);
