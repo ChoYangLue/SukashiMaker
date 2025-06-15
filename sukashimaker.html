@@ -17,6 +17,50 @@
         const ctx = canvas.getContext('2d');
         const target = document.getElementById('inputImage');
 
+        // 小数値を分数（分子と分母）に変換する関数
+        const decimalToFraction = (number, significant_digits = 6) => {
+            const digits = getdecimalPrecision(number, significant_digits);
+            if (digits === false) return false;
+
+            const sign = Math.sign(number) < 0 ? ["-", -1] : ["", 1];
+
+            let denominator = 10 ** digits; // 分母
+            let numerator = Math.abs(Math.round(number * denominator)); // 分子
+
+            if (denominator !== 1) {
+                // 約分
+                let gcd;
+                while ((gcd = greatestCommonDivisor2(denominator, numerator)) !== 1) {
+
+                    denominator /= gcd;
+                    numerator /= gcd;
+                }
+            }
+            return `${numerator}/${denominator}`;
+        }
+        // 最大公約数を求める https://note.affi-sapo-sv.com/js-greatest-common-divisor.php
+        const greatestCommonDivisor2 = (value1, value2) => {
+            let r, a = value1, b = value2;
+
+            do {
+                r = a % b;
+                a = b; b = r;
+            } while (r !== 0);
+
+            return a;
+        }
+        // 小数部の桁数を求める https://note.affi-sapo-sv.com/js-get-fractional-digits.php
+        const getdecimalPrecision = (number, significant_digits = 6) => {
+            // 数値文字列かどうかのチェック
+            if (typeof number !== "number") return false;
+
+            const f = number.toFixed(significant_digits).split(".")[1];
+            if (f === undefined || f.length === 0) return 0;
+
+            // 後方の"0"を取り除いた桁数取得
+            return f.length - ["1", ...f].reverse().findIndex(e => e != "0");
+        }
+
         class ExifClass {
             constructor() {
                 this.Artist = "";
@@ -44,7 +88,7 @@
                 return "f/" + this.FNumber;
             }
             getShutterSpeedText() {
-                return this.ExposureTime + "s";
+                return decimalToFraction(parseFloat(this.ExposureTime)) + "s";
             }
             getTimeText() {
                 return this.DateTimeOriginal;
