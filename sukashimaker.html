@@ -6,6 +6,16 @@
     <title>sukashimaker</title>
     <meta name="description" content="サイトの概要を記載">
     <!--<link rel="stylesheet" href="style.css">-->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Matangi:wght@300..900&display=swap');
+
+        body {
+            font-family: "Matangi", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 300;
+            font-style: normal;
+        }
+    </style>
 </head>
 
 <body>
@@ -61,6 +71,26 @@
             return f.length - ["1", ...f].reverse().findIndex(e => e != "0");
         }
 
+        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24) {
+            // Google Fonts APIを使用してフォントをロード
+            await new Promise((resolve) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = `https://fonts.googleapis.com/css2?family=${fontName}&display=swap`;
+                document.head.appendChild(link);
+
+                // フォントがロードされたことを確認
+                link.onload = () => {
+                    resolve();
+                };
+            });
+
+            // Canvasのスタイルを設定し、テキストを描画
+            ctx.font = `${fontSize}px "${fontName}"`;
+            ctx.fillStyle = color;
+            ctx.fillText(text, x, y);
+        }
+
         class ExifClass {
             constructor() {
                 this.Artist = "";
@@ -89,6 +119,9 @@
             }
             getShutterSpeedText() {
                 return decimalToFraction(parseFloat(this.ExposureTime)) + "s";
+            }
+            getIsoText() {
+                return "iso" + this.ISOSpeedRatings;
             }
             getTimeText() {
                 return this.DateTimeOriginal;
@@ -124,12 +157,9 @@
                     ctx.drawImage(image, 0, 0);
 
                     // テキストの描画
-                    const font = "24px sans-serif";
-                    const color = "white";
-                    const text = myObject.getMakeText() + " " + myObject.getModelText() + " " + myObject.getFocalLenText() + " " + myObject.getFnumberText() + " " + myObject.getShutterSpeedText();
-                    ctx.font = font;
-                    ctx.fillStyle = color;
-                    ctx.fillText(text, 10, image.height - 100);
+                    const text = myObject.getMakeText() + " " + myObject.getModelText() + " " + myObject.getFocalLenText() + " " + myObject.getFnumberText() + " " + myObject.getShutterSpeedText() + " " + myObject.getIsoText();
+                    applyGoogleFontToCanvas(ctx, text, 50, image.height - 50, "Matangi", "white");
+
                 };
             };
             reader.readAsDataURL(file);
