@@ -94,6 +94,12 @@
                 ctx.fillText(text, x, y);
             } else {
                 ctx.fillText(text, x - textWidth, y);
+
+                ctx.strokeStyle = "rgb(128 128 128)";
+                ctx.beginPath();
+                ctx.moveTo(x - textWidth - fontSize, y - fontSize * 1.5);
+                ctx.lineTo(x - textWidth - fontSize, y + fontSize);
+                ctx.stroke();
             }
 
         }
