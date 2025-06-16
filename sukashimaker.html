@@ -72,7 +72,7 @@
             return f.length - ["1", ...f].reverse().findIndex(e => e != "0");
         }
 
-        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24) {
+        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24, alignLeft = true) {
             // Google Fonts APIを使用してフォントをロード
             await new Promise((resolve) => {
                 const link = document.createElement('link');
@@ -89,7 +89,13 @@
             // Canvasのスタイルを設定し、テキストを描画
             ctx.font = `${fontSize}px "${fontName}"`;
             ctx.fillStyle = color;
-            ctx.fillText(text, x, y);
+            const textWidth = ctx.measureText(text).width;
+            if (alignLeft) {
+                ctx.fillText(text, x, y);
+            } else {
+                ctx.fillText(text, x - textWidth, y);
+            }
+
         }
 
         class ExifClass {
@@ -182,14 +188,11 @@
                 ctx.fillRect(0, this.topHeight, this.width, this.height);
 
                 // テキストの描画
-                //const text = exifObj.getMakeText() + " " + exifObj.getModelText() + " " + exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
                 const rightText = exifObj.getMakeText() + " " + exifObj.getModelText();
-                ctx.textAlign = "left";
-                applyGoogleFontToCanvas(ctx, rightText, this.fontSize * 6, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize);
+                applyGoogleFontToCanvas(ctx, rightText, this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, true);
 
                 const leftText = exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
-                ctx.textAlign = "right";
-                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 2, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize);
+                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, false);
             }
         }
         const shkashiAria = new SukashiCanvas();
