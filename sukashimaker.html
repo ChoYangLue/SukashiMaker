@@ -152,6 +152,7 @@
                 this.topHeight = 0;
                 this.width = 0;
                 this.height = 0;
+                this.isImageHorizontal = false;
             }
             resizeImageToWindow(image) {
                 // ウィンドウの幅と高さを取得
@@ -177,6 +178,10 @@
                 image.width = newWidth;
                 image.height = newHeight;
 
+                if (aspectRatio < 1) {
+                    this.isImageHorizontal = true;
+                }
+
                 this.resizeSukashiWindow(image);
             }
             resizeSukashiWindow(image) {
@@ -184,7 +189,10 @@
                 this.height = image.height / 6;
                 this.topWidth = 0;
                 this.topHeight = image.height;
-                this.fontSize = Math.trunc(this.height / 4);
+                this.fontSize = Math.trunc(this.height / 5);
+                if (this.isImageHorizontal) {
+                    this.fontSize = Math.trunc(this.width / 35);
+                }
             }
             getCanvasHeight(image) {
                 return image.height + this.height;
