@@ -72,7 +72,7 @@
             return f.length - ["1", ...f].reverse().findIndex(e => e != "0");
         }
 
-        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24, alignLeft = true) {
+        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24, alignLeft = true, svgPath = "none") {
             // Google Fonts APIを使用してフォントをロード
             await new Promise((resolve) => {
                 const link = document.createElement('link');
@@ -100,7 +100,32 @@
                 ctx.moveTo(x - textWidth - fontSize, y - fontSize * 1.5);
                 ctx.lineTo(x - textWidth - fontSize, y + fontSize);
                 ctx.stroke();
+
+                if (!svgPath.includes("none")) { drawSvgOnCanvas(ctx, svgPath, x - textWidth - fontSize * 4, y, fontSize * 2); }
             }
+
+        }
+
+
+        function drawSvgOnCanvas(ctx, svgString, x, y, size) {
+            if (!ctx || !svgString) {
+                console.error("canvasとsvgStringは必須です。");
+                return;
+            }
+
+            if (typeof x !== 'number' || typeof y !== 'number' || typeof size !== 'number') {
+                console.error("x, y, sizeは数値である必要があります。");
+                return;
+            }
+
+            const img = new Image();
+            img.src = svgString;
+            img.onload = () => {
+                ctx.drawImage(img, x, y - size / 2, size, size);
+            };
+            img.onerror = (error) => {
+                console.error("SVGの読み込み中にエラーが発生しました:", error);
+            };
 
         }
 
@@ -121,8 +146,28 @@
             getModelText() {
                 return this.Model;
             }
-            getMakeLogo() {
-                return "";
+            getLogoSvgPath() {
+                //sony
+                if (this.Make.includes("SONY")) {
+                    console.log("sony");
+                    if (this.Model.includes("ILCE-")) {
+                        console.log("alpha");
+                        return "logo/sony-alpha.svg";
+                    } else if (this.Model.includes("ZV-E")) {
+                        console.log("EマウントのVlogcamは実質alpha");
+                        return "logo/sony-alpha.svg";
+                    } else if (this.Model.includes("ZV-")) {
+                        console.log("cybershot");
+                        return "logo/sony-cyber-shot.svg";
+                    } else if (this.Model.includes("NEX-")) {
+                        console.log("NEXもalphaと認めよう");
+                        return "logo/sony-alpha.svg";
+                    } else if (this.Model.includes("DSC-")) {
+                        console.log("cybershot");
+                        return "logo/sony-cyber-shot.svg";
+                    }
+                }
+                return "none";
             }
             getFocalLenText() {
                 return this.FocalLengthIn35mmFilm + "mm";
@@ -206,7 +251,7 @@
                 applyGoogleFontToCanvas(ctx, rightText, this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, true);
 
                 const leftText = exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
-                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, false);
+                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, false, exifObj.getLogoSvgPath());
             }
         }
         const shkashiAria = new SukashiCanvas();
