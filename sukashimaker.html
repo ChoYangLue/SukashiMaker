@@ -138,16 +138,22 @@
                 this.FNumber = "";
                 this.ExposureTime = "";
                 this.FocalLengthIn35mmFilm = "";
+                this.FocalLength = "";
                 this.DateTimeOriginal = "";
             }
             getMakeText() {
+                if (this.Make != null && this.Make.includes("Canon")) {
+                    return ""; //CanonはModel名にCanon文字列が入るので省略
+                }
                 return this.Make;
             }
             getModelText() {
                 return this.Model;
             }
             getLogoSvgPath() {
-                //sony
+                if (this.Make == null || this.Model == null) {
+                    return "none";
+                }
                 if (this.Make.includes("SONY")) {
                     console.log("sony");
                     if (this.Model.includes("ILCE-")) {
@@ -166,10 +172,25 @@
                         console.log("cybershot");
                         return "logo/sony-cyber-shot.svg";
                     }
+                } else if (this.Make.includes("NIKON")) {
+                    console.log("nikon");
+                    if (this.Model.includes("NIKON Z")) {
+                        console.log("NIKON Z");
+                        return "logo/nikon.svg";
+                    }
+                } else if (this.Make.includes("Canon")) {
+                    console.log("Canon");
+                    if (this.Model.includes("Canon EOS")) {
+                        console.log("EOS");
+                        return "logo/canon-eos.svg";
+                    }
                 }
                 return "none";
             }
             getFocalLenText() {
+                if (this.FocalLengthIn35mmFilm == null) {
+                    return this.FocalLength + "mm";
+                }
                 return this.FocalLengthIn35mmFilm + "mm";
             }
             getFnumberText() {
@@ -273,6 +294,7 @@
                         myObject.FNumber = EXIF.getTag(this, 'FNumber');
                         myObject.ExposureTime = EXIF.getTag(this, 'ExposureTime');
                         myObject.FocalLengthIn35mmFilm = EXIF.getTag(this, 'FocalLengthIn35mmFilm');
+                        myObject.FocalLength = EXIF.getTag(this, 'FocalLength');
                         myObject.DateTimeOriginal = EXIF.getTag(this, 'DateTimeOriginal');
 
                         // すべての情報
