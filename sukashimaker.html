@@ -171,6 +171,9 @@
                     } else if (this.Model.includes("DSC-")) {
                         console.log("cybershot");
                         return "logo/sony-cyber-shot.svg";
+                    } else if (this.Model.includes("SLT-A")) {
+                        console.log("Aマウントもalphaと認めよう");
+                        return "logo/sony-alpha.svg";
                     }
                 } else if (this.Make.includes("NIKON")) {
                     console.log("nikon");
@@ -183,6 +186,12 @@
                     if (this.Model.includes("Canon EOS")) {
                         console.log("EOS");
                         return "logo/canon-eos.svg";
+                    }
+                } else if (this.Make.includes("FUJIFILM")) {
+                    console.log("FUJIFILMn");
+                    if (this.Model.includes("X-T")) {
+                        console.log("X-T");
+                        return "logo/fujifilm.svg";
                     }
                 }
                 return "none";
