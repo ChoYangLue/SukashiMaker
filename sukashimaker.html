@@ -306,6 +306,10 @@
                         myObject.FocalLength = EXIF.getTag(this, 'FocalLength');
                         myObject.DateTimeOriginal = EXIF.getTag(this, 'DateTimeOriginal');
 
+                        if (EXIF.getTag(this, 'ISOSpeedRatings') == null && EXIF.getTag(this, 'FNumber') == null && EXIF.getTag(this, 'ExposureTime') == null) {
+                            alert('Exif情報がありません。出直して来てください。');
+                        }
+
                         // すべての情報
                         console.log(EXIF.getAllTags(this));
                     });
