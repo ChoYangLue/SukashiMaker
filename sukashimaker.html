@@ -72,14 +72,37 @@
             line-height: 1.7;
         }
 
-        .hero-badge {
-            padding: 10px 14px;
+        .hero-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .language-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.72);
             border: 1px solid var(--panel-border);
-            color: var(--accent-strong);
-            white-space: nowrap;
             box-shadow: var(--shadow);
+        }
+
+        .language-switch button {
+            min-height: 38px;
+            padding: 0 14px;
+            box-shadow: none;
+        }
+
+        .language-switch button:hover:not(:disabled) {
+            box-shadow: none;
+        }
+
+        .language-switch button.is-active {
+            background: linear-gradient(135deg, var(--accent) 0%, #0b8f83 100%);
+            color: #fff;
         }
 
         .workspace {
@@ -289,6 +312,11 @@
                 align-items: start;
             }
 
+            .hero-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
             .workspace {
                 grid-template-columns: 1fr;
             }
@@ -335,41 +363,47 @@
         <section class="hero">
             <div>
                 <h1>SukashiMaker</h1>
-                <p>写真を読み込むと、EXIF情報をもとにカメラ名や撮影設定を下部へ整えて描画します。PCでは広く作業できて、スマホでは指で操作しやすいレイアウトに最適化しています。</p>
+                <p data-i18n="heroDescription">写真を読み込むと、EXIF情報をもとにカメラ名や撮影設定を下部へ整えて描画します。PCでは広く作業できて、スマホでは指で操作しやすいレイアウトに最適化しています。</p>
+            </div>
+            <div class="hero-actions">
+                <div class="language-switch" aria-label="Language switcher">
+                    <button class="secondary-button" id="langJa" type="button">日本語</button>
+                    <button class="secondary-button" id="langEn" type="button">English</button>
+                </div>
             </div>
         </section>
 
         <section class="workspace">
             <aside class="panel">
-                <h2 class="section-title">画像を選ぶ</h2>
-                <p class="section-copy">JPEG などのEXIF入り画像を読み込んで、透かし入りのプレビューを生成します。</p>
+                <h2 class="section-title" data-i18n="selectTitle">画像を選ぶ</h2>
+                <p class="section-copy" data-i18n="selectCopy">JPEG などのEXIF入り画像を読み込んで、透かし入りのプレビューを生成します。</p>
 
                 <div class="upload-field">
-                    <label class="upload-label" for="inputImage">画像ファイルをアップロード</label>
+                    <label class="upload-label" for="inputImage" data-i18n="uploadLabel">画像ファイルをアップロード</label>
                     <input class="upload-input" type="file" id="inputImage" accept="image/*" />
                     <div class="file-name" id="fileName">まだファイルは選択されていません。</div>
                 </div>
 
                 <div class="action-row">
-                    <button class="primary-button" id="downloadImage" type="button" disabled>画像を保存</button>
-                    <button class="secondary-button" id="resetView" type="button">リセット</button>
+                    <button class="primary-button" id="downloadImage" type="button" disabled data-i18n="downloadButton">画像を保存</button>
+                    <button class="secondary-button" id="resetView" type="button" data-i18n="resetButton">リセット</button>
                 </div>
 
                 <p class="tips">
-                    <strong>ヒント</strong><br>
-                    EXIFが入っていない画像では撮影情報を組み立てられません。生成後はプレビューをそのまま保存できます。
+                    <strong data-i18n="tipsTitle">ヒント</strong><br>
+                    <span data-i18n="tipsBody">EXIFが入っていない画像では撮影情報を組み立てられません。生成後はプレビューをそのまま保存できます。</span>
                 </p>
             </aside>
 
             <section class="preview-panel" id="previewPanel">
                 <div class="preview-header">
-                    <h2>Preview</h2>
+                    <h2 data-i18n="previewTitle">Preview</h2>
                     <div class="preview-status" id="previewStatus">画像を読み込むとここに結果が表示されます。</div>
                 </div>
                 <div class="preview-stage" id="previewStage">
                     <div class="empty-state" id="emptyState">
-                        <strong>ここにプレビューが表示されます</strong>
-                        スマホでは縦スクロールで、PCでは広いキャンバスで確認できます。まずは写真を1枚選んでください。
+                        <strong data-i18n="emptyTitle">ここにプレビューが表示されます</strong>
+                        <span data-i18n="emptyBody">スマホでは縦スクロールで、PCでは広いキャンバスで確認できます。まずは写真を1枚選んでください。</span>
                     </div>
                     <canvas id="myCanvas"></canvas>
                 </div>
@@ -387,7 +421,83 @@
         const fileNameLabel = document.getElementById('fileName');
         const downloadButton = document.getElementById('downloadImage');
         const resetButton = document.getElementById('resetView');
+        const langJaButton = document.getElementById('langJa');
+        const langEnButton = document.getElementById('langEn');
         let currentImage = null;
+        let currentLang = 'ja';
+        let previewMessageKey = 'previewIdle';
+
+        const translations = {
+            ja: {
+                pageTitle: 'sukashimaker',
+                heroDescription: '写真を読み込むと、EXIF情報をもとにカメラ名や撮影設定を下部へ整えて描画します。PCでは広く作業できて、スマホでは指で操作しやすいレイアウトに最適化しています。',
+                selectTitle: '画像を選ぶ',
+                selectCopy: 'JPEG などのEXIF入り画像を読み込んで、透かし入りのプレビューを生成します。',
+                uploadLabel: '画像ファイルをアップロード',
+                downloadButton: '画像を保存',
+                resetButton: 'リセット',
+                tipsTitle: 'ヒント',
+                tipsBody: 'EXIFが入っていない画像では撮影情報を組み立てられません。生成後はプレビューをそのまま保存できます。',
+                previewTitle: 'Preview',
+                emptyTitle: 'ここにプレビューが表示されます',
+                emptyBody: 'スマホでは縦スクロールで、PCでは広いキャンバスで確認できます。まずは写真を1枚選んでください。',
+                noFileSelected: 'まだファイルは選択されていません。',
+                previewIdle: '画像を読み込むとここに結果が表示されます。',
+                previewReady: 'プレビューを生成しました。必要ならそのまま保存できます。',
+                previewLoading: '画像を読み込んでいます...',
+                previewNoExif: 'EXIF情報が見つかりませんでした。別の画像を試してください。',
+                previewLoadError: '画像の読み込みに失敗しました。別のファイルを試してください。',
+                exifAlert: 'Exif情報がありません。出直して来てください。',
+                langLabel: '言語切替'
+            },
+            en: {
+                pageTitle: 'sukashimaker',
+                heroDescription: 'Load a photo and SukashiMaker will read its EXIF data to render camera details and shooting settings in a clean footer layout. The interface is tuned for spacious desktop editing and comfortable touch use on mobile.',
+                selectTitle: 'Choose an image',
+                selectCopy: 'Load a JPEG or another image with EXIF data to generate a watermarked preview.',
+                uploadLabel: 'Upload image file',
+                downloadButton: 'Save image',
+                resetButton: 'Reset',
+                tipsTitle: 'Tip',
+                tipsBody: 'If the image does not include EXIF data, the shooting details cannot be generated. After rendering, you can save the preview as-is.',
+                previewTitle: 'Preview',
+                emptyTitle: 'Your preview will appear here',
+                emptyBody: 'On mobile you can review it with vertical scrolling, and on desktop you get a wider canvas. Start by selecting one photo.',
+                noFileSelected: 'No file selected yet.',
+                previewIdle: 'The result will appear here after you load an image.',
+                previewReady: 'Preview generated. You can save it as-is if you like.',
+                previewLoading: 'Loading image...',
+                previewNoExif: 'No EXIF data was found. Please try a different image.',
+                previewLoadError: 'The image could not be loaded. Please try a different file.',
+                exifAlert: 'This image does not contain EXIF data. Please choose another one.',
+                langLabel: 'Language switcher'
+            }
+        };
+
+        function t(key) {
+            return translations[currentLang][key] || translations.ja[key] || key;
+        }
+
+        function applyTranslations() {
+            document.documentElement.lang = currentLang;
+            document.title = t('pageTitle');
+            document.querySelectorAll('[data-i18n]').forEach((node) => {
+                const key = node.dataset.i18n;
+                node.textContent = t(key);
+            });
+            fileNameLabel.textContent = currentImage ? fileNameLabel.textContent : t('noFileSelected');
+            previewStatus.textContent = t(previewMessageKey);
+            langJaButton.classList.toggle('is-active', currentLang === 'ja');
+            langEnButton.classList.toggle('is-active', currentLang === 'en');
+            langJaButton.setAttribute('aria-pressed', String(currentLang === 'ja'));
+            langEnButton.setAttribute('aria-pressed', String(currentLang === 'en'));
+            document.querySelector('.language-switch').setAttribute('aria-label', t('langLabel'));
+        }
+
+        function setLanguage(lang) {
+            currentLang = translations[lang] ? lang : 'ja';
+            applyTranslations();
+        }
 
         // 小数値を分数（分子と分母）に変換する関数
         const decimalToFraction = (number, significant_digits = 6) => {
@@ -652,14 +762,19 @@
             downloadButton.disabled = !isReady;
         }
 
+        function setPreviewStateByKey(messageKey, isReady = false) {
+            previewMessageKey = messageKey;
+            setPreviewState(t(messageKey), isReady);
+        }
+
         function resetPreview() {
             currentImage = null;
             canvas.width = 0;
             canvas.height = 0;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             target.value = '';
-            fileNameLabel.textContent = 'まだファイルは選択されていません。';
-            setPreviewState('画像を読み込むとここに結果が表示されます。');
+            fileNameLabel.textContent = t('noFileSelected');
+            setPreviewStateByKey('previewIdle');
         }
 
         function renderPreview(image) {
@@ -669,7 +784,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(image, 0, 0, image.width, image.height);
             shkashiAria.drawSukashiText(ctx, myObject);
-            setPreviewState('プレビューを生成しました。必要ならそのまま保存できます。', true);
+            setPreviewStateByKey('previewReady', true);
         }
 
         target.addEventListener('change', (e) => {
@@ -681,7 +796,7 @@
             }
 
             fileNameLabel.textContent = file.name;
-            setPreviewState('画像を読み込んでいます...');
+            setPreviewStateByKey('previewLoading');
 
             const reader = new FileReader();
             reader.onloadend = function () {
@@ -703,8 +818,8 @@
 
                         if (EXIF.getTag(this, 'ISOSpeedRatings') == null && EXIF.getTag(this, 'FNumber') == null && EXIF.getTag(this, 'ExposureTime') == null) {
                             hasExif = false;
-                            alert('Exif情報がありません。出直して来てください。');
-                            setPreviewState('EXIF情報が見つかりませんでした。別の画像を試してください。');
+                            alert(t('exifAlert'));
+                            setPreviewStateByKey('previewNoExif');
                             return;
                         }
 
@@ -721,7 +836,7 @@
                 };
                 image.onerror = function () {
                     currentImage = null;
-                    setPreviewState('画像の読み込みに失敗しました。別のファイルを試してください。');
+                    setPreviewStateByKey('previewLoadError');
                 };
             };
             reader.readAsDataURL(file);
@@ -742,11 +857,21 @@
             resetPreview();
         });
 
+        langJaButton.addEventListener('click', () => {
+            setLanguage('ja');
+        });
+
+        langEnButton.addEventListener('click', () => {
+            setLanguage('en');
+        });
+
         window.addEventListener('resize', () => {
             if (currentImage) {
                 renderPreview(currentImage);
             }
         });
+
+        setLanguage((navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en');
     </script>
 </body>
 
