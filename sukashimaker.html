@@ -3,30 +3,391 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>sukashimaker</title>
     <meta name="description" content="サイトの概要を記載">
     <!--<link rel="stylesheet" href="style.css">-->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Matangi:wght@300..900&display=swap');
 
+        :root {
+            color-scheme: light;
+            --page-bg: linear-gradient(180deg, #f3f6fb 0%, #eef2f7 100%);
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --panel-border: rgba(16, 24, 40, 0.08);
+            --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            --text-main: #162033;
+            --text-subtle: #56637a;
+            --accent: #0f766e;
+            --accent-strong: #115e59;
+            --accent-soft: #dff6f0;
+            --canvas-bg: #e8edf4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
         body {
+            margin: 0;
+            min-height: 100%;
             font-family: "Matangi", sans-serif;
             font-optical-sizing: auto;
             font-weight: 300;
             font-style: normal;
+            background: var(--page-bg);
+            color: var(--text-main);
+        }
+
+        body {
+            padding: 24px;
+        }
+
+        .app-shell {
+            width: min(1200px, 100%);
+            margin: 0 auto;
+        }
+
+        .hero {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(2rem, 5vw, 3.6rem);
+            line-height: 0.95;
+            letter-spacing: 0.02em;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 680px;
+            color: var(--text-subtle);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .hero-badge {
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--panel-border);
+            color: var(--accent-strong);
+            white-space: nowrap;
+            box-shadow: var(--shadow);
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .panel,
+        .preview-panel {
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            background: var(--panel-bg);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
+        }
+
+        .panel {
+            padding: 24px;
+        }
+
+        .preview-panel {
+            padding: 18px;
+        }
+
+        .section-title {
+            margin: 0 0 8px;
+            font-size: 1.4rem;
+        }
+
+        .section-copy {
+            margin: 0 0 18px;
+            color: var(--text-subtle);
+            line-height: 1.6;
+        }
+
+        .upload-field {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .upload-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 56px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1px dashed rgba(15, 118, 110, 0.35);
+            background: linear-gradient(180deg, #f7fffd 0%, #ecfbf7 100%);
+            color: var(--accent-strong);
+            cursor: pointer;
+            text-align: center;
+            transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+        }
+
+        .upload-label:hover {
+            transform: translateY(-1px);
+            border-color: rgba(15, 118, 110, 0.6);
+            box-shadow: 0 10px 24px rgba(15, 118, 110, 0.12);
+        }
+
+        .upload-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .file-name {
+            min-height: 1.5em;
+            color: var(--text-subtle);
+            word-break: break-word;
+        }
+
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        button {
+            appearance: none;
+            border: 0;
+            border-radius: 999px;
+            min-height: 46px;
+            padding: 0 18px;
+            font: inherit;
+            cursor: pointer;
+            transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        .primary-button {
+            background: linear-gradient(135deg, var(--accent) 0%, #0b8f83 100%);
+            color: #fff;
+        }
+
+        .secondary-button {
+            background: #fff;
+            color: var(--text-main);
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+
+        .tips {
+            margin: 0;
+            padding: 16px 18px;
+            border-radius: 22px;
+            background: #fff;
+            color: var(--text-subtle);
+            line-height: 1.7;
+        }
+
+        .tips strong {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .preview-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .preview-status {
+            color: var(--text-subtle);
+            font-size: 0.95rem;
+        }
+
+        .preview-stage {
+            display: grid;
+            place-items: center;
+            min-height: 420px;
+            padding: 20px;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at top, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0)),
+                var(--canvas-bg);
+            overflow: hidden;
+        }
+
+        .empty-state {
+            max-width: 420px;
+            text-align: center;
+            color: var(--text-subtle);
+            line-height: 1.7;
+        }
+
+        .empty-state strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        canvas {
+            display: none;
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            border: 2px solid rgba(15, 23, 42, 0.1);
+            border-radius: 22px;
+            background: #fff;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+        }
+
+        .preview-panel.is-ready canvas {
+            display: block;
+        }
+
+        .preview-panel.is-ready .empty-state {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                padding: 16px;
+            }
+
+            .hero {
+                flex-direction: column;
+                align-items: start;
+            }
+
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-stage {
+                min-height: 280px;
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .panel,
+            .preview-panel {
+                border-radius: 24px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .preview-panel {
+                padding: 14px;
+            }
+
+            .hero h1 {
+                line-height: 1;
+            }
+
+            .upload-label,
+            button {
+                width: 100%;
+            }
+
+            .action-row {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <input type="file" id="inputImage" accept="image/*" /><br>
-    <canvas id="myCanvas"></canvas>
+    <main class="app-shell">
+        <section class="hero">
+            <div>
+                <h1>SukashiMaker</h1>
+                <p>写真を読み込むと、EXIF情報をもとにカメラ名や撮影設定を下部へ整えて描画します。PCでは広く作業できて、スマホでは指で操作しやすいレイアウトに最適化しています。</p>
+            </div>
+        </section>
+
+        <section class="workspace">
+            <aside class="panel">
+                <h2 class="section-title">画像を選ぶ</h2>
+                <p class="section-copy">JPEG などのEXIF入り画像を読み込んで、透かし入りのプレビューを生成します。</p>
+
+                <div class="upload-field">
+                    <label class="upload-label" for="inputImage">画像ファイルをアップロード</label>
+                    <input class="upload-input" type="file" id="inputImage" accept="image/*" />
+                    <div class="file-name" id="fileName">まだファイルは選択されていません。</div>
+                </div>
+
+                <div class="action-row">
+                    <button class="primary-button" id="downloadImage" type="button" disabled>画像を保存</button>
+                    <button class="secondary-button" id="resetView" type="button">リセット</button>
+                </div>
+
+                <p class="tips">
+                    <strong>ヒント</strong><br>
+                    EXIFが入っていない画像では撮影情報を組み立てられません。生成後はプレビューをそのまま保存できます。
+                </p>
+            </aside>
+
+            <section class="preview-panel" id="previewPanel">
+                <div class="preview-header">
+                    <h2>Preview</h2>
+                    <div class="preview-status" id="previewStatus">画像を読み込むとここに結果が表示されます。</div>
+                </div>
+                <div class="preview-stage" id="previewStage">
+                    <div class="empty-state" id="emptyState">
+                        <strong>ここにプレビューが表示されます</strong>
+                        スマホでは縦スクロールで、PCでは広いキャンバスで確認できます。まずは写真を1枚選んでください。
+                    </div>
+                    <canvas id="myCanvas"></canvas>
+                </div>
+            </section>
+        </section>
+    </main>
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
     <script>
         const canvas = document.getElementById('myCanvas');
-        canvas.style.border = "2px solid";
         const ctx = canvas.getContext('2d');
         const target = document.getElementById('inputImage');
+        const previewPanel = document.getElementById('previewPanel');
+        const previewStage = document.getElementById('previewStage');
+        const previewStatus = document.getElementById('previewStatus');
+        const fileNameLabel = document.getElementById('fileName');
+        const downloadButton = document.getElementById('downloadImage');
+        const resetButton = document.getElementById('resetView');
+        let currentImage = null;
 
         // 小数値を分数（分子と分母）に変換する関数
         const decimalToFraction = (number, significant_digits = 6) => {
@@ -230,26 +591,25 @@
                 this.isImageHorizontal = false;
             }
             resizeImageToWindow(image) {
-                // ウィンドウの幅と高さを取得
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
+                const stageWidth = Math.max(previewStage.clientWidth - 40, 240);
+                const isMobile = window.innerWidth <= 900;
+                const stageHeight = Math.max(window.innerHeight * (isMobile ? 0.42 : 0.68), 240);
 
                 // 画像のアスペクト比を計算
                 const aspectRatio = image.naturalWidth / image.naturalHeight;
 
-                // ウィンドウサイズに合わせて画像の新しい幅と高さを計算
+                this.isImageHorizontal = false;
+
+                // プレビューエリアに合わせて画像の新しい幅と高さを計算
                 let newWidth, newHeight;
-                if (windowWidth / windowHeight > aspectRatio) {
-                    // ウィンドウが画像より縦長の場合
-                    newHeight = windowHeight;
+                if (stageWidth / stageHeight > aspectRatio) {
+                    newHeight = Math.min(stageHeight, image.naturalHeight);
                     newWidth = newHeight * aspectRatio;
                 } else {
-                    // ウィンドウが画像より横長の場合
-                    newWidth = windowWidth;
+                    newWidth = Math.min(stageWidth, image.naturalWidth);
                     newHeight = newWidth / aspectRatio;
                 }
 
-                // 画像のスタイルを更新
                 image.width = newWidth;
                 image.height = newHeight;
 
@@ -286,14 +646,49 @@
         }
         const shkashiAria = new SukashiCanvas();
 
+        function setPreviewState(message, isReady = false) {
+            previewStatus.textContent = message;
+            previewPanel.classList.toggle('is-ready', isReady);
+            downloadButton.disabled = !isReady;
+        }
+
+        function resetPreview() {
+            currentImage = null;
+            canvas.width = 0;
+            canvas.height = 0;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            target.value = '';
+            fileNameLabel.textContent = 'まだファイルは選択されていません。';
+            setPreviewState('画像を読み込むとここに結果が表示されます。');
+        }
+
+        function renderPreview(image) {
+            shkashiAria.resizeImageToWindow(image);
+            canvas.width = image.width;
+            canvas.height = shkashiAria.getCanvasHeight(image);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0, image.width, image.height);
+            shkashiAria.drawSukashiText(ctx, myObject);
+            setPreviewState('プレビューを生成しました。必要ならそのまま保存できます。', true);
+        }
+
         target.addEventListener('change', (e) => {
             // 選択された画像ファイルの処理
             const file = e.target.files[0];
+            if (!file) {
+                resetPreview();
+                return;
+            }
+
+            fileNameLabel.textContent = file.name;
+            setPreviewState('画像を読み込んでいます...');
+
             const reader = new FileReader();
             reader.onloadend = function () {
                 const image = new Image();
                 image.src = reader.result;
                 image.onload = function () {
+                    let hasExif = true;
                     // 読み込んだ画像ファイルの処理
                     EXIF.getData(image, function () {
                         myObject.Artist = EXIF.getTag(this, 'Artist');
@@ -307,23 +702,50 @@
                         myObject.DateTimeOriginal = EXIF.getTag(this, 'DateTimeOriginal');
 
                         if (EXIF.getTag(this, 'ISOSpeedRatings') == null && EXIF.getTag(this, 'FNumber') == null && EXIF.getTag(this, 'ExposureTime') == null) {
+                            hasExif = false;
                             alert('Exif情報がありません。出直して来てください。');
+                            setPreviewState('EXIF情報が見つかりませんでした。別の画像を試してください。');
+                            return;
                         }
 
                         // すべての情報
                         console.log(EXIF.getAllTags(this));
                     });
+                    if (!hasExif) {
+                        currentImage = null;
+                        return;
+                    }
 
-                    shkashiAria.resizeImageToWindow(image);
-                    canvas.width = image.width;
-                    canvas.height = shkashiAria.getCanvasHeight(image);
-                    ctx.drawImage(image, 0, 0, image.width, image.height);
-
-                    // テキストの描画
-                    shkashiAria.drawSukashiText(ctx, myObject);
+                    currentImage = image;
+                    renderPreview(image);
+                };
+                image.onerror = function () {
+                    currentImage = null;
+                    setPreviewState('画像の読み込みに失敗しました。別のファイルを試してください。');
                 };
             };
             reader.readAsDataURL(file);
+        });
+
+        downloadButton.addEventListener('click', () => {
+            const link = document.createElement('a');
+            const originalName = fileNameLabel.textContent && fileNameLabel.textContent !== 'まだファイルは選択されていません。'
+                ? fileNameLabel.textContent.replace(/\.[^.]+$/, '')
+                : 'sukashi-image';
+
+            link.href = canvas.toDataURL('image/png');
+            link.download = `${originalName}-sukashi.png`;
+            link.click();
+        });
+
+        resetButton.addEventListener('click', () => {
+            resetPreview();
+        });
+
+        window.addEventListener('resize', () => {
+            if (currentImage) {
+                renderPreview(currentImage);
+            }
         });
     </script>
 </body>
