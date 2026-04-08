@@ -22,6 +22,16 @@
             --accent-strong: #115e59;
             --accent-soft: #dff6f0;
             --canvas-bg: #e8edf4;
+            --switch-bg: rgba(255, 255, 255, 0.72);
+            --secondary-bg: #ffffff;
+            --secondary-border: rgba(15, 23, 42, 0.1);
+            --tip-bg: #ffffff;
+            --upload-bg: linear-gradient(180deg, #f7fffd 0%, #ecfbf7 100%);
+            --upload-border: rgba(15, 118, 110, 0.35);
+            --upload-shadow: rgba(15, 118, 110, 0.12);
+            --canvas-border: rgba(15, 23, 42, 0.1);
+            --canvas-surface: #ffffff;
+            --canvas-shadow: rgba(15, 23, 42, 0.08);
         }
 
         * {
@@ -76,6 +86,7 @@
             display: flex;
             justify-content: flex-end;
             align-items: center;
+            gap: 10px;
             flex-shrink: 0;
         }
 
@@ -85,7 +96,7 @@
             gap: 8px;
             padding: 6px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.72);
+            background: var(--switch-bg);
             border: 1px solid var(--panel-border);
             box-shadow: var(--shadow);
         }
@@ -154,17 +165,18 @@
             padding: 14px 18px;
             border-radius: 18px;
             border: 1px dashed rgba(15, 118, 110, 0.35);
-            background: linear-gradient(180deg, #f7fffd 0%, #ecfbf7 100%);
+            background: var(--upload-bg);
             color: var(--accent-strong);
             cursor: pointer;
             text-align: center;
             transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+            border-color: var(--upload-border);
         }
 
         .upload-label:hover {
             transform: translateY(-1px);
-            border-color: rgba(15, 118, 110, 0.6);
-            box-shadow: 0 10px 24px rgba(15, 118, 110, 0.12);
+            border-color: var(--accent);
+            box-shadow: 0 10px 24px var(--upload-shadow);
         }
 
         .upload-input {
@@ -219,16 +231,16 @@
         }
 
         .secondary-button {
-            background: #fff;
+            background: var(--secondary-bg);
             color: var(--text-main);
-            border: 1px solid rgba(15, 23, 42, 0.1);
+            border: 1px solid var(--secondary-border);
         }
 
         .tips {
             margin: 0;
             padding: 16px 18px;
             border-radius: 22px;
-            background: #fff;
+            background: var(--tip-bg);
             color: var(--text-subtle);
             line-height: 1.7;
         }
@@ -288,10 +300,10 @@
             width: auto;
             max-width: 100%;
             height: auto;
-            border: 2px solid rgba(15, 23, 42, 0.1);
+            border: 2px solid var(--canvas-border);
             border-radius: 22px;
-            background: #fff;
-            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+            background: var(--canvas-surface);
+            box-shadow: 0 16px 36px var(--canvas-shadow);
         }
 
         .preview-panel.is-ready canvas {
@@ -370,6 +382,10 @@
                     <button class="secondary-button" id="langJa" type="button">日本語</button>
                     <button class="secondary-button" id="langEn" type="button">English</button>
                 </div>
+                <div class="language-switch" id="themeSwitch" aria-label="Theme switcher">
+                    <button class="secondary-button" id="themeLight" type="button">Light</button>
+                    <button class="secondary-button" id="themeDark" type="button">Dark</button>
+                </div>
             </div>
         </section>
 
@@ -423,8 +439,11 @@
         const resetButton = document.getElementById('resetView');
         const langJaButton = document.getElementById('langJa');
         const langEnButton = document.getElementById('langEn');
+        const themeLightButton = document.getElementById('themeLight');
+        const themeDarkButton = document.getElementById('themeDark');
         let currentImage = null;
         let currentLang = 'ja';
+        let currentTheme = 'light';
         let previewMessageKey = 'previewIdle';
 
         const translations = {
@@ -448,7 +467,10 @@
                 previewNoExif: 'EXIF情報が見つかりませんでした。別の画像を試してください。',
                 previewLoadError: '画像の読み込みに失敗しました。別のファイルを試してください。',
                 exifAlert: 'Exif情報がありません。出直して来てください。',
-                langLabel: '言語切替'
+                langLabel: '言語切替',
+                themeLabel: 'プレビューテーマ切替',
+                themeLight: 'ライト',
+                themeDark: 'ダーク'
             },
             en: {
                 pageTitle: 'sukashimaker',
@@ -470,7 +492,10 @@
                 previewNoExif: 'No EXIF data was found. Please try a different image.',
                 previewLoadError: 'The image could not be loaded. Please try a different file.',
                 exifAlert: 'This image does not contain EXIF data. Please choose another one.',
-                langLabel: 'Language switcher'
+                langLabel: 'Language switcher',
+                themeLabel: 'Preview theme switcher',
+                themeLight: 'Light',
+                themeDark: 'Dark'
             }
         };
 
@@ -492,11 +517,30 @@
             langJaButton.setAttribute('aria-pressed', String(currentLang === 'ja'));
             langEnButton.setAttribute('aria-pressed', String(currentLang === 'en'));
             document.querySelector('.language-switch').setAttribute('aria-label', t('langLabel'));
+            document.getElementById('themeSwitch').setAttribute('aria-label', t('themeLabel'));
+            themeLightButton.textContent = t('themeLight');
+            themeDarkButton.textContent = t('themeDark');
         }
 
         function setLanguage(lang) {
             currentLang = translations[lang] ? lang : 'ja';
             applyTranslations();
+        }
+
+        function applyTheme() {
+            themeLightButton.classList.toggle('is-active', currentTheme === 'light');
+            themeDarkButton.classList.toggle('is-active', currentTheme === 'dark');
+            themeLightButton.setAttribute('aria-pressed', String(currentTheme === 'light'));
+            themeDarkButton.setAttribute('aria-pressed', String(currentTheme === 'dark'));
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme === 'dark' ? 'dark' : 'light';
+            shkashiAria.setTheme(currentTheme);
+            applyTheme();
+            if (currentImage) {
+                renderPreview(currentImage);
+            }
         }
 
         // 小数値を分数（分子と分母）に変換する関数
@@ -543,7 +587,7 @@
             return f.length - ["1", ...f].reverse().findIndex(e => e != "0");
         }
 
-        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24, alignLeft = true, svgPath = "none") {
+        async function applyGoogleFontToCanvas(ctx, text, x, y, fontName = "Matangi", color = 'black', fontSize = 24, alignLeft = true, svgPath = "none", dividerColor = "rgb(128 128 128)") {
             // Google Fonts APIを使用してフォントをロード
             await new Promise((resolve) => {
                 const link = document.createElement('link');
@@ -566,7 +610,7 @@
             } else {
                 ctx.fillText(text, x - textWidth, y);
 
-                ctx.strokeStyle = "rgb(128 128 128)";
+                ctx.strokeStyle = dividerColor;
                 ctx.beginPath();
                 ctx.moveTo(x - textWidth - fontSize, y - fontSize * 1.5);
                 ctx.lineTo(x - textWidth - fontSize, y + fontSize);
@@ -693,12 +737,25 @@
                 this.bgColor = "white";
                 this.font = "Matangi";
                 this.fontColor = "black";
+                this.dividerColor = "rgb(128 128 128)";
                 this.fontSize = 24;
                 this.topWidth = 0;
                 this.topHeight = 0;
                 this.width = 0;
                 this.height = 0;
                 this.isImageHorizontal = false;
+            }
+            setTheme(theme) {
+                if (theme === 'dark') {
+                    this.bgColor = "#050505";
+                    this.fontColor = "#ffffff";
+                    this.dividerColor = "rgba(255, 255, 255, 0.65)";
+                    return;
+                }
+
+                this.bgColor = "white";
+                this.fontColor = "black";
+                this.dividerColor = "rgb(128 128 128)";
             }
             resizeImageToWindow(image) {
                 const stageWidth = Math.max(previewStage.clientWidth - 40, 240);
@@ -748,10 +805,10 @@
 
                 // テキストの描画
                 const rightText = exifObj.getMakeText() + " " + exifObj.getModelText();
-                applyGoogleFontToCanvas(ctx, rightText, this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, true);
+                applyGoogleFontToCanvas(ctx, rightText, this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, true, "none", this.dividerColor);
 
                 const leftText = exifObj.getFocalLenText() + " " + exifObj.getFnumberText() + " " + exifObj.getShutterSpeedText() + " " + exifObj.getIsoText();
-                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, false, exifObj.getLogoSvgPath());
+                applyGoogleFontToCanvas(ctx, leftText, this.width - this.fontSize * 1, this.topHeight + this.height / 2, this.font, this.fontColor, this.fontSize, false, exifObj.getLogoSvgPath(), this.dividerColor);
             }
         }
         const shkashiAria = new SukashiCanvas();
@@ -865,6 +922,14 @@
             setLanguage('en');
         });
 
+        themeLightButton.addEventListener('click', () => {
+            setTheme('light');
+        });
+
+        themeDarkButton.addEventListener('click', () => {
+            setTheme('dark');
+        });
+
         window.addEventListener('resize', () => {
             if (currentImage) {
                 renderPreview(currentImage);
@@ -872,6 +937,7 @@
         });
 
         setLanguage((navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en');
+        setTheme('light');
     </script>
 </body>
 
